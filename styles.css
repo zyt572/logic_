@@ -856,6 +856,34 @@ input::placeholder {
   margin: 15px 0;
 }
 
+.import-card {
+  margin-top: 14px;
+  padding: 20px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.import-card h2 {
+  margin-top: 0;
+  font-size: 19px;
+}
+
+.import-card .secondary-btn {
+  display: block;
+  margin-top: 10px;
+}
+
+.file-input {
+  display: none;
+}
+
+.import-status {
+  min-height: 22px;
+  margin: 10px 0 0;
+  color: var(--primary-deep);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .stat {
   padding: 15px;
   border: 1px solid var(--border);

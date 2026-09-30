@@ -1,4 +1,4 @@
-const CACHE_NAME = 'logic-daily-static-v2';
+const CACHE_NAME = 'logic-daily-static-v3';
 const BASE = self.registration.scope;
 const ASSETS = [
   '',
@@ -7,6 +7,7 @@ const ASSETS = [
   'app.js',
   'manifest.webmanifest',
   'data/questions.js',
+  'data/imported-questions.js',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/maskable-512.png'

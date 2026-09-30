@@ -126,6 +126,18 @@
             <div class="stats-grid" id="statsGrid"></div>
             <button class="secondary-btn full" id="checkinBtn2" type="button">每日签到</button>
           </div>
+
+          <div class="card import-card">
+            <h2>题库管理</h2>
+            <p class="muted">
+              支持 JSON / TXT 导入。TXT 会自动转换成 JSON 题库格式。
+              内置逻辑题 + 预置 237 道逻辑题 + 自定义导入题库。
+            </p>
+            <button class="secondary-btn full" id="importBtn" type="button">选择文件导入题库</button>
+            <button class="secondary-btn full" id="resetImportBtn" type="button">清空自定义导入</button>
+            <input id="importFile" class="file-input" type="file" accept=".json,.txt,application/json,text/plain" />
+            <p class="import-status" id="importStatus"></p>
+          </div>
         </div>
       </section>
     </main>
@@ -139,6 +151,7 @@
 
   <div id="toast" class="toast hidden"></div>
   <script src="./data/questions.js"></script>
+  <script src="./data/imported-questions.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

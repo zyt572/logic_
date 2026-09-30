@@ -1,5 +1,6 @@
 const STORAGE_USERS = 'logic_daily_users_v1';
 const STORAGE_SESSION = 'logic_daily_session_v1';
+const STORAGE_USER_IMPORT = 'logic_daily_user_import_v1';
 
 const DAILY_MIN = 3;
 const DAILY_MAX = 5;
@@ -175,20 +176,327 @@ function shuffleQuestionOptions(question, random = Math.random) {
 
 let questionCache = null;
 
+function cleanQuestionText(value) {
+  return String(value == null ? '' : value)
+    .replace(/\r/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n+/g, '\n')
+    .trim();
+}
+
+function cleanOptionText(value) {
+  return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+}
+
+function makeChoiceQuestion(raw, sourceName) {
+  const question = cleanQuestionText(raw.question || raw.title || raw.stem || '');
+  const options = (Array.isArray(raw.options) ? raw.options : [])
+    .map((option) => cleanOptionText(typeof option === 'string' ? option : option.text || option.label || ''))
+    .filter(Boolean);
+
+  let answerIndex = Number(raw.answerIndex);
+  const answerText = cleanOptionText(raw.answer || raw.correctAnswer || raw.correct || '');
+
+  if (!Number.isInteger(answerIndex) && answerText) {
+    answerIndex = options.findIndex(
+      (option) => option === answerText || option.includes(answerText) || answerText.includes(option)
+    );
+
+    if (answerIndex < 0 && /^[A-Ha-h]$/.test(answerText)) {
+      const index = answerText.toUpperCase().charCodeAt(0) - 65;
+      if (index >= 0 && index < options.length) answerIndex = index;
+    }
+  }
+
+  if (
+    !question ||
+    options.length < 2 ||
+    !Number.isInteger(answerIndex) ||
+    answerIndex < 0 ||
+    answerIndex >= options.length
+  ) {
+    return null;
+  }
+
+  const idSeed = raw.id ? `id_${raw.id}` : `${question}|${options.join('|')}`;
+
+  return {
+    ...raw,
+    id: `q_${hashString(idSeed).toString(36)}`,
+    question,
+    options,
+    answerIndex,
+    explanation: cleanQuestionText(raw.explanation || raw.analysis || ''),
+    source: raw.source || sourceName || '题库',
+    sourceUrl: raw.sourceUrl || '',
+    chapter: raw.chapter || ''
+  };
+}
+
+function getBuiltinQuestions() {
+  const raw = Array.isArray(window.LOGIC_QUESTIONS) ? window.LOGIC_QUESTIONS : [];
+  return raw.map((question) => makeChoiceQuestion(question, question.source || '内置逻辑题库')).filter(Boolean);
+}
+
+function getPreloadedQA() {
+  return Array.isArray(window.LOGIC_BANK_QA) ? window.LOGIC_BANK_QA : [];
+}
+
+function loadUserImportedBank() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_USER_IMPORT) || '[]');
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function saveUserImportedBank(list) {
+  localStorage.setItem(STORAGE_USER_IMPORT, JSON.stringify(list));
+  questionCache = null;
+}
+
+function makeQaChoice(item, answerPool, sourceName) {
+  const question = cleanQuestionText(item.question || '');
+  const correct = cleanOptionText(item.answer || '');
+  if (!question || !correct) return null;
+
+  const id = `qa_${hashString(`${question}|${correct}`).toString(36)}`;
+  const random = mulberry32(hashString(id));
+  const candidates = [...new Set(answerPool.map(cleanOptionText).filter((text) => text && text !== correct))];
+  const distractors = shuffleWithRandom(candidates, random).slice(0, 3);
+
+  while (distractors.length < 3) {
+    distractors.push(`以上都不对（${distractors.length + 1}）`);
+  }
+
+  const options = shuffleWithRandom([correct, ...distractors], random);
+  const answerIndex = options.indexOf(correct);
+
+  return {
+    id,
+    question,
+    options,
+    answerIndex,
+    explanation: cleanQuestionText(item.explanation || ''),
+    source: item.source || sourceName || '导入题库',
+    sourceUrl: item.sourceUrl || '',
+    chapter: item.chapter || ''
+  };
+}
+
 function getAllQuestions() {
   if (questionCache) return questionCache;
 
-  const raw = Array.isArray(window.LOGIC_QUESTIONS) ? window.LOGIC_QUESTIONS : [];
+  const builtin = getBuiltinQuestions();
+  const preloadedRaw = getPreloadedQA();
+  const userRaw = loadUserImportedBank();
 
-  questionCache = raw.map((question) => ({
-    ...question,
-    options: [...(question.options || [])],
-    id: `q_${hashString(`${question.question}|${(question.options || []).join('|')}`).toString(36)}`,
-    source: question.source || '本地逻辑题库',
-    sourceUrl: question.sourceUrl || ''
-  }));
+  const answerPool = [];
 
+  for (const item of [...preloadedRaw, ...userRaw]) {
+    const answer = cleanOptionText(item.answer || '');
+    if (answer) answerPool.push(answer);
+  }
+
+  for (const question of builtin) {
+    answerPool.push(question.options[question.answerIndex]);
+  }
+
+  for (const item of userRaw) {
+    if (Array.isArray(item.options) && Number.isInteger(item.answerIndex) && item.options[item.answerIndex]) {
+      answerPool.push(cleanOptionText(item.options[item.answerIndex]));
+    }
+  }
+
+  const preloadedPlayable = preloadedRaw
+    .map((item) => makeQaChoice(item, answerPool, '预置逻辑题库'))
+    .filter(Boolean);
+
+  const userPlayable = userRaw
+    .map((item) => {
+      if (Array.isArray(item.options) && item.options.length >= 2) {
+        return makeChoiceQuestion(item, '导入题库');
+      }
+      return makeQaChoice(item, answerPool, '导入题库');
+    })
+    .filter(Boolean);
+
+  questionCache = [...builtin, ...preloadedPlayable, ...userPlayable];
   return questionCache;
+}
+
+function getBankStats() {
+  return {
+    builtin: (window.LOGIC_QUESTIONS || []).length,
+    preloaded: getPreloadedQA().filter((item) => item.question && item.answer).length,
+    imported: loadUserImportedBank().length,
+    playable: getAllQuestions().length
+  };
+}
+
+/* ------------------ 导入题库 ------------------ */
+
+function parseJsonBank(text) {
+  const data = JSON.parse(text);
+  const list = Array.isArray(data)
+    ? data
+    : Array.isArray(data.questions)
+      ? data.questions
+      : Array.isArray(data.data)
+        ? data.data
+        : [];
+
+  return list
+    .map((item) => ({
+      question: cleanQuestionText(item.question || item.title || item.stem || ''),
+      answer: cleanQuestionText(item.answer || item.correctAnswer || item.correct || ''),
+      options: Array.isArray(item.options) ? item.options : undefined,
+      answerIndex: Number.isInteger(item.answerIndex) ? item.answerIndex : undefined,
+      explanation: cleanQuestionText(item.explanation || item.analysis || ''),
+      chapter: item.chapter || '',
+      source: item.source || '导入题库'
+    }))
+    .filter(Boolean)
+    .filter((item) => item.question && (item.answer || (Array.isArray(item.options) && item.options.length >= 2)));
+}
+
+function splitTxtBlocks(text) {
+  const normalized = String(text || '').replace(/\r\n?/g, '\n').trim();
+
+  // 优先按空行分块：适合1. 题目\n...\n答案：...这种标准格式。
+  const byBlank = normalized
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  if (byBlank.length > 1 && byBlank.every((block) => /答案\s*[:：]/.test(block))) {
+    return byBlank;
+  }
+
+  const numbered = normalized
+    .split(/\n(?=\s*\d+\s*[.．、]\s*)/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  if (numbered.length > 1) return numbered;
+  return byBlank;
+}
+
+function parseTxtBank(text) {
+  const blocks = splitTxtBlocks(text);
+  const items = [];
+
+  for (const rawBlock of blocks) {
+    const block = rawBlock.replace(/^\s*\d+\s*[.．、]\s*/, '').trim();
+    if (!block) continue;
+
+    let question = '';
+    let answer = '';
+
+    let match = block.match(/^题目\s*[:：]\s*([\s\S]*?)\n\s*答案\s*[:：]\s*([\s\S]*)$/);
+    if (!match) match = block.match(/^问\s*[:：]\s*([\s\S]*?)\n\s*答\s*[:：]\s*([\s\S]*)$/);
+
+    if (match) {
+      question = match[1];
+      answer = match[2];
+    } else {
+      const index = block.search(/\n\s*答案\s*[:：]/);
+      if (index >= 0) {
+        question = block.slice(0, index);
+        answer = block.slice(index).replace(/^\s*答案\s*[:：]\s*/, '');
+      }
+    }
+
+    question = cleanQuestionText(question);
+    answer = cleanQuestionText(answer);
+
+    if (question && answer) {
+      items.push({
+        question,
+        answer,
+        explanation: '',
+        chapter: '',
+        source: '导入题库（TXT）'
+      });
+    }
+  }
+
+  return items;
+}
+
+function parseBankText(text, fileName = '') {
+  const trimmed = String(text || '').trim();
+  const looksLikeJson = fileName.toLowerCase().endsWith('.json') || /^[\[{]/.test(trimmed);
+  return looksLikeJson ? parseJsonBank(trimmed) : parseTxtBank(trimmed);
+}
+
+async function importBankFile(file) {
+  const text = await file.text();
+  const parsed = parseBankText(text, file.name);
+
+  if (!parsed.length) {
+    throw new Error('没有解析到题目，请检查 TXT / JSON 格式');
+  }
+
+  const existing = loadUserImportedBank();
+  const seen = new Set(
+    existing.map((item) => `${item.question}||${item.answer || (item.options || []).join('|')}`)
+  );
+
+  let added = 0;
+
+  for (const item of parsed) {
+    const key = `${item.question}||${item.answer || (item.options || []).join('|')}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    existing.push(item);
+    added += 1;
+  }
+
+  saveUserImportedBank(existing);
+  return { added, total: existing.length, playable: getAllQuestions().length };
+}
+
+function bindImport() {
+  const fileInput = $('#importFile');
+  const importButton = $('#importBtn');
+  const resetButton = $('#resetImportBtn');
+
+  if (!fileInput || !importButton || !resetButton) return;
+
+  importButton.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    const status = $('#importStatus');
+    if (status) status.textContent = '正在解析并导入...';
+
+    try {
+      const result = await importBankFile(file);
+      if (status) {
+        status.textContent = `导入完成：本次新增 ${result.added} 道，自定义题库 ${result.total} 道，当前可用 ${result.playable} 道。`;
+      }
+      toast(`成功导入 ${result.added} 道题`, 'success');
+      if (state.tab === 'profile') renderProfile();
+    } catch (err) {
+      if (status) status.textContent = `导入失败：${err.message}`;
+      toast(err.message, 'error');
+    } finally {
+      fileInput.value = '';
+    }
+  });
+
+  resetButton.addEventListener('click', () => {
+    if (!confirm('确定清空自定义导入题库吗？内置题库和预置 237 道题不会被删除。')) return;
+    saveUserImportedBank([]);
+    const status = $('#importStatus');
+    if (status) status.textContent = '已清空自定义导入题库。';
+    toast('已清空自定义导入题库', 'success');
+    if (state.tab === 'profile') renderProfile();
+  });
 }
 
 /* ------------------ 段位 / 资料 ------------------ */
@@ -509,6 +817,7 @@ async function init() {
   bindAuth();
   bindNav();
   bindGameActions();
+  bindImport();
   initTheme();
 
   const username = localStorage.getItem(STORAGE_SESSION);
@@ -1038,6 +1347,12 @@ function renderProfile() {
     <div class="stat"><span class="stat-value">${stats.wrongPending ?? 0}</span><span class="stat-label">待复习错题</span></div>
     <div class="stat"><span class="stat-value">${profile.streak || 0}</span><span class="stat-label">连续签到</span></div>
   `;
+
+  const bank = getBankStats();
+  const status = $('#importStatus');
+  if (status) {
+    status.textContent = `内置 ${bank.builtin} 道 + 预置 ${bank.preloaded} 道 + 自定义 ${bank.imported} 道，当前可用 ${bank.playable} 道。`;
+  }
 }
 
 /* ------------------ 导航 / 主题 / 事件 ------------------ */
