@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#6fbf8b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="逻辑题每日刷" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <title>逻辑题每日刷</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar hidden" id="topbar">
+      <div class="brand">
+        <span class="brand-icon"></span>
+        <div>
+          <h1>逻辑题每日刷</h1>
+          <p>今天也要动动脑</p>
+        </div>
+      </div>
+      <div class="user-actions">
+        <button class="icon-btn" id="themeBtn" type="button" title="切换主题"></button>
+        <button class="text-btn" id="logoutBtn" type="button">退出</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="authView" class="view auth-view">
+        <div class="auth-card">
+          <div class="auth-hero">
+            <div class="auth-emoji"></div>
+            <h2>逻辑题每日刷</h2>
+            <p>登录后开始今日 3-5 道逻辑题</p>
+            <p class="auth-tip">数据保存在本机浏览器，无需服务器</p>
+          </div>
+
+          <div class="auth-tabs">
+            <button class="active" data-auth-tab="login" type="button">登录</button>
+            <button data-auth-tab="register" type="button">注册</button>
+          </div>
+
+          <form id="authForm" novalidate>
+            <label class="field">
+              <span>用户名</span>
+              <input id="authUsername" type="text" autocomplete="username" placeholder="3-16位中文、字母、数字" />
+            </label>
+            <label class="field">
+              <span>密码</span>
+              <input id="authPassword" type="password" autocomplete="current-password" placeholder="至少6位" />
+            </label>
+            <p class="form-error" id="authError"></p>
+            <button class="primary-btn full" id="authSubmit" type="submit">登录</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="gameView" class="view hidden">
+        <div class="profile-strip card">
+          <div class="rank-badge" id="rankBadge"></div>
+          <div class="profile-info">
+            <div class="profile-line">
+              <strong id="helloName">玩家</strong>
+              <span id="rankName">逻辑新手</span>
+            </div>
+            <div class="points-line">
+              <span id="pointsText">0 积分</span>
+              <span id="streakText">连续签到 0 天</span>
+            </div>
+            <div class="progress">
+              <div id="rankProgress"></div>
+            </div>
+          </div>
+          <button class="checkin-btn" id="checkinBtn" type="button">签到</button>
+        </div>
+
+        <nav class="seg-tabs" id="segTabs">
+          <button class="active" data-tab="daily" type="button">今日刷题</button>
+          <button data-tab="wrong" type="button">
+            错题库 <span class="badge" id="wrongBadge">0</span>
+          </button>
+          <button data-tab="profile" type="button">我的</button>
+        </nav>
+
+        <div id="dailyTab" class="tab-panel">
+          <div class="card daily-card">
+            <div class="card-head">
+              <div>
+                <span class="pill" id="dailyDate">--</span>
+                <span class="pill ghost" id="dailyProgress">0/0</span>
+              </div>
+              <span class="source-label" id="questionSource"></span>
+            </div>
+
+            <div id="questionArea" class="question-area">
+              <div class="question-text" id="questionText">正在加载题目...</div>
+              <div class="options" id="options"></div>
+            </div>
+
+            <div id="feedbackArea" class="feedback hidden"></div>
+
+            <div class="actions">
+              <button class="primary-btn" id="submitBtn" type="button">提交答案</button>
+              <button class="primary-btn hidden" id="nextBtn" type="button">下一题</button>
+              <button class="secondary-btn hidden" id="extraBtn" type="button">再来一道</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="wrongTab" class="tab-panel hidden">
+          <div class="card">
+            <h2>错题库</h2>
+            <p class="muted">答错的题会自动收进来，可随时重看、重做。</p>
+            <div id="wrongList" class="wrong-list"></div>
+          </div>
+        </div>
+
+        <div id="profileTab" class="tab-panel hidden">
+          <div class="card profile-card">
+            <h2>我的战绩</h2>
+            <div class="stats-grid" id="statsGrid"></div>
+            <button class="secondary-btn full" id="checkinBtn2" type="button">每日签到</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav hidden" id="bottomNav">
+      <button class="active" data-tab="daily" type="button"><span></span>今日</button>
+      <button data-tab="wrong" type="button"><span></span>错题</button>
+      <button data-tab="profile" type="button"><span></span>我的</button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="./data/questions.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

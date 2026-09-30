@@ -1,0 +1,44 @@
+{
+  "name": "逻辑题每日刷",
+  "short_name": "逻辑题",
+  "description": "每日逻辑题刷题、错题复习、积分段位与签到。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f7f3",
+  "theme_color": "#6fbf8b",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "今日刷题",
+      "short_name": "今日",
+      "url": "./?tab=daily"
+    },
+    {
+      "name": "错题库",
+      "short_name": "错题",
+      "url": "./?tab=wrong"
+    }
+  ]
+}
