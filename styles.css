@@ -1045,3 +1045,348 @@ input::placeholder {
     padding: 26px 19px;
   }
 }
+/* ==========================================================
+   字体与排版优化
+   ========================================================== */
+
+:root {
+  --font-sans: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+    "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-number: "SF Pro Display", "DIN Alternate", "Roboto Mono",
+    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --leading-tight: 1.35;
+  --leading-normal: 1.7;
+  --leading-loose: 1.85;
+}
+
+html {
+  font-size: 16px;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-size: 16px;
+  line-height: var(--leading-normal);
+  letter-spacing: 0.008em;
+}
+
+button,
+input {
+  line-height: 1.45;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: var(--leading-tight);
+  letter-spacing: 0.012em;
+  text-wrap: balance;
+}
+
+p,
+.muted,
+.question-text,
+.option,
+.opt-text,
+.feedback,
+.feedback-line,
+.feedback-exp,
+.wrong-question,
+.wrong-option,
+.wrong-exp,
+.import-card p {
+  text-wrap: pretty;
+}
+
+.brand h1 {
+  font-size: 17px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+}
+
+.brand p {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.auth-hero h2 {
+  font-size: 26px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+}
+
+.auth-hero p {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.auth-tip {
+  line-height: 1.5;
+}
+
+.field span {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.field input {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.primary-btn,
+.secondary-btn,
+.checkin-btn {
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.profile-line strong {
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.profile-line span {
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+.points-line {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pill {
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+.source-label {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.question-text {
+  margin: 4px 0 20px;
+  font-size: clamp(17px, 4.8vw, 21px);
+  font-weight: 850;
+  line-height: 1.78;
+  letter-spacing: 0.012em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.options {
+  gap: 12px;
+}
+
+.option {
+  padding: 14px 15px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.opt-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.opt-key {
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.feedback {
+  padding: 16px;
+  border-radius: 18px;
+  line-height: 1.7;
+}
+
+.feedback-line {
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+
+.feedback-exp {
+  margin-top: 10px;
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+.actions {
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.card-head {
+  margin-bottom: 18px;
+}
+
+.stats-grid {
+  gap: 12px;
+}
+
+.stat {
+  padding: 16px;
+}
+
+.stat-value {
+  font-family: var(--font-number);
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.muted {
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+
+.import-card {
+  padding: 22px;
+}
+
+.import-card .muted {
+  margin-bottom: 14px;
+}
+
+.import-status {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.wrong-list {
+  gap: 12px;
+}
+
+.wrong-head {
+  padding: 15px;
+}
+
+.wrong-question {
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+
+.wrong-meta {
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.wrong-body {
+  padding: 0 15px 15px;
+}
+
+.wrong-option {
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.bottom-nav button {
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.toast {
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+@media (min-width: 720px) {
+  .app-shell {
+    max-width: 900px;
+  }
+
+  .topbar {
+    padding: 12px 18px;
+  }
+
+  .daily-card {
+    padding: 30px;
+  }
+
+  .question-text {
+    font-size: 21px;
+    line-height: 1.82;
+  }
+
+  .options {
+    gap: 13px;
+  }
+
+  .option {
+    padding: 15px 17px;
+    font-size: 15.5px;
+  }
+
+  .stats-grid {
+    gap: 14px;
+  }
+
+  .stat {
+    padding: 18px;
+  }
+}
+
+@media (min-width: 1080px) {
+  .app-shell {
+    max-width: 960px;
+  }
+
+  .bottom-nav {
+    width: min(calc(100% - 48px), 920px);
+  }
+}
+
+@media (max-width: 420px) {
+  body {
+    font-size: 15.5px;
+  }
+
+  .question-text {
+    font-size: 17px;
+    line-height: 1.72;
+  }
+
+  .option {
+    padding: 13px 13px;
+    font-size: 14.5px;
+  }
+
+  .daily-card {
+    padding: 17px;
+  }
+
+  .auth-card {
+    padding: 26px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'logic-daily-static-v3';
+const CACHE_NAME = 'logic-daily-static-v4';
 const BASE = self.registration.scope;
 const ASSETS = [
   '',
